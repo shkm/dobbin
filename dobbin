@@ -1,0 +1,91 @@
+#!/bin/bash
+#
+# A script managing workhorse.
+set -euo pipefail
+
+ROOT_DIR="$HOME/.dobbin"
+PACKAGES_DIR="$ROOT_DIR/packages"
+BIN_DIR="$ROOT_DIR/bin"
+PACKAGE_LIST="$ROOT_DIR/package_list"
+
+ensure_root_dir_exists() {
+  if [[ ! -d "$ROOT_DIR" ]]; then
+    echo "$ROOT_DIR is missing; creating it."
+    mkdir "$ROOT_DIR"
+  fi
+}
+
+ensure_packages_dir_exists() {
+  if [[ ! -d "$PACKAGES_DIR" ]]; then
+    echo "$PACKAGES_DIR is missing; creating it."
+    mkdir "$PACKAGES_DIR"
+  fi
+}
+
+ensure_bin_dir_exists() {
+  if [[ ! -d "$BIN_DIR" ]]; then
+    echo "$BIN_DIR is missing; creating it."
+    mkdir "$BIN_DIR"
+  fi
+}
+
+ensure_package_list_exists() {
+  if [[ ! -f "$PACKAGE_LIST" ]]; then
+    echo "$PACKAGE_LIST is missing; creating it."
+    touch "$PACKAGE_LIST"
+  fi
+}
+
+ensure_files_and_folders_exist() {
+  ensure_root_dir_exists
+  ensure_packages_dir_exists
+  ensure_bin_dir_exists
+  ensure_package_list_exists
+}
+
+# Runs through each line of the packages file and installs
+# each package.
+install_packages() {
+  while read package_line; do
+    install_package $package_line
+  done < "$PACKAGE_LIST"
+}
+
+# Given a package line, installss it and sets up symlinks
+# Args:
+# package_line - A line describing the git repo address followed by files to symlink.
+#                $github_repo file, [file, ...]
+install_package() {
+  local package_line="$@"
+
+  while IFS=' ' read -a parsed_package; do
+    local repo_url="${parsed_package[0]}"
+    local repo_dir_name=$(echo $repo_url | sed -E 's/.*\/([^/.]+)[^/]*$/\1/')
+
+    cd $PACKAGES_DIR
+
+    if [[ ! -d $repo_dir_name ]]; then
+      echo "Cloning $repo_url…"
+      git clone --quiet $repo_url
+    fi
+
+    for file in "${parsed_package[@]:1}"; do
+      chmod +x "$PACKAGES_DIR/$repo_dir_name/$file"
+      # TODO: auto-remove file extension in link
+      echo "Linking $file"
+      ln -sf "$PACKAGES_DIR/$repo_dir_name/$file" "$BIN_DIR/"
+    done
+  done <<< "$package_line"
+}
+
+main() {
+  # TODO: update command
+  # TODO: install command (currently default)
+  # TODO: help command
+  # TODO: default output help
+
+  ensure_files_and_folders_exist
+  install_packages
+}
+
+main "$@"
