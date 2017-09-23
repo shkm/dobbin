@@ -78,14 +78,40 @@ install_package() {
   done <<< "$package_line"
 }
 
-main() {
-  # TODO: update command
-  # TODO: install command (currently default)
-  # TODO: help command
-  # TODO: default output help
-
+install() {
   ensure_files_and_folders_exist
   install_packages
+}
+
+help() {
+  echo "Not implemented yet."
+}
+
+main() {
+  local command="${1:-}"
+
+  if [[ -z $command ]]; then
+    help
+  else
+    case "$command" in
+      'install')
+        install;;
+      add)
+        echo "Not implemented yet.";;
+      update)
+        echo "Not implemented yet.";;
+      clean)
+        echo "Not implemented yet.";;
+      edit)
+        echo "Not implemented yet.";;
+      help)
+        help;;
+      *)
+        echo "Unknown command."
+        exit 1
+        ;;
+    esac
+  fi
 }
 
 main "$@"
