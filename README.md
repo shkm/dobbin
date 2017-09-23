@@ -25,11 +25,16 @@ Now just add `$HOME/.dobbin/bin` to your `$PATH`.
 Installs packages listed in your `$HOME/.dobbin/package_list`.
 
 ### `dobbin add repo_url path [path...]`
-__not implemented yet__
-
 Adds the package to your package list and installs it.
 
 Each path passed is relative to the repository and will be symlinked into `$HOME/.dobbin/bin`.
+
+### `dobbin remove repo_url`
+__not implemented yet__
+
+Removes the entire package from your package list.
+
+This will remove the git repository and all symlinked files.
 
 #### Example
 `dobbin add https://github.com/shkm/dobbin dobbin`
@@ -54,7 +59,7 @@ Opens the package list in your editor.
 
 ## TODO
 - Implement a `help` command
-- Implement `add` command
+- Implement `remove` command
 - Implement `update` command
 - Implement `clean` command
 - Implement `edit` command

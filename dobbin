@@ -27,7 +27,53 @@ install_packages() {
   done < "$PACKAGE_LIST"
 }
 
-# Given a package line, installss it and sets up symlinks
+# Adds a package to the list, installs it and sets up its symlinks.
+# If the package is already in the list, its symlinks are modified accordingly.
+# package_line - A line describing the git repo address followed by files to symlink.
+#                $github_repo file, [file, ...]
+add_package() {
+  local repo_url="$1"
+  local package_already_exists=$(grep "^$repo_url " "$PACKAGE_LIST")
+
+  if [[ -z $package_already_exists ]]; then
+    # does not exist
+    echo "$@" >> "$PACKAGE_LIST"
+  else
+    # does exist
+    local pattern="s|^$repo_url .*|$@|g"
+    sed -i.bak "$pattern" "$PACKAGE_LIST" && rm "$PACKAGE_LIST.bak"
+  fi
+
+  install_package "$@"
+}
+
+# Installs the symlinks for a package line, removing any that it does not define.
+# package_line - A line describing the git repo address followed by files to symlink.
+#                $github_repo file, [file, ...]
+install_symlinks() {
+  local absolute_repo_dir="$PACKAGES_DIR/$(repo_dir_name $url)"
+
+  # remove any existing links for this package
+  $(find $BIN_DIR -type l -ilname "$absolute_repo_dir/*" -exec rm {} \;)
+
+  # Make files executable and symlink them
+  local files="${@:2}"
+  for file in $files; do
+    # TODO: auto-remove file extension in link
+    chmod +x "$absolute_repo_dir/$file"
+    echo "$(tput setaf 8)->$(tput sgr0) linking $(tput setaf 2)$file$(tput sgr0)"
+    ln -s "$absolute_repo_dir/$file" "$BIN_DIR/"
+  done
+}
+
+# Given a repo URL, returns its expected directory name.
+# Args:
+# repo_url - The URL to the repo.
+repo_dir_name() {
+  echo $(echo "$1" | sed -E 's/.*\/([^/.]+)[^/]*$/\1/')
+}
+
+# Given a package line, installs it and sets up symlinks.
 # Args:
 # package_line - A line describing the git repo address followed by files to symlink.
 #                $github_repo file, [file, ...]
@@ -35,44 +81,47 @@ install_package() {
   local package_line="$@"
 
   while IFS=' ' read -a parsed_package; do
-    local repo_url="${parsed_package[0]}"
-    local repo_dir_name=$(echo $repo_url | sed -E 's/.*\/([^/.]+)[^/]*$/\1/')
+    local url="${parsed_package[0]}"
+    local dir=$(repo_dir_name $url)
+
+    echo "installing $(tput setaf 4)$url$(tput sgr0)"
 
     cd $PACKAGES_DIR
 
-    if [[ ! -d $repo_dir_name ]]; then
-      echo "Cloning $repo_url…"
-      git clone --quiet $repo_url
+    if [[ ! -e $dir ]]; then
+      git clone --quiet $url
     fi
 
-    for file in "${parsed_package[@]:1}"; do
-      chmod +x "$PACKAGES_DIR/$repo_dir_name/$file"
-      # TODO: auto-remove file extension in link
-      echo "Linking $file"
-      ln -sf "$PACKAGES_DIR/$repo_dir_name/$file" "$BIN_DIR/"
-    done
+    install_symlinks "${parsed_package[@]}"
   done <<< "$package_line"
 }
 
-install() {
+command_install() {
   ensure_files_and_folders_exist
   install_packages
 }
 
-help() {
+command_add() {
+  ensure_files_and_folders_exist
+  add_package "$@"
+}
+
+command_help() {
   echo "Not implemented yet."
 }
 
 main() {
-  local command="${1:-}"
+  local command_args="${*:2}"
 
-  if [[ -z $command ]]; then
-    help
+  if [[ -z ${1+x} ]]; then
+    command_help
   else
-    case "$command" in
-      'install')
-        install;;
+    case "$1" in
+      install)
+        command_install;;
       add)
+        command_add $command_args;;
+      remove)
         echo "Not implemented yet.";;
       update)
         echo "Not implemented yet.";;
@@ -80,7 +129,7 @@ main() {
         echo "Not implemented yet.";;
       edit)
         echo "Not implemented yet.";;
-      help)
+      command_help)
         help;;
       *)
         echo "Unknown command."
