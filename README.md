@@ -11,10 +11,9 @@ I wrote this primarily so I don't have to manually pull down various scripts int
 ## Installation
 Since Dobbin is just a script, you can use it to manage itself.
 
-__not working yet, need to implement add command__
 ```sh
-curl https://raw.githubusercontent.com/shkm/dobbin/master/dobbin | \
-bash -s install https://github.com/shkm/dobbin dobbin
+\curl -sS https://raw.githubusercontent.com/shkm/dobbin/master/dobbin | \
+bash -s add https://github.com/shkm/dobbin dobbin
 ```
 
 Now just add `$HOME/.dobbin/bin` to your `$PATH`.
