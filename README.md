@@ -1,17 +1,17 @@
-# dobbin
+# :horse: dobbin
 A script managing workhorse.
 
 ## Description
 Dobbin is a simple package manager for miscellaneous binaries and scripts. Given a git repository and a list of files, the repository will be cloned and the files symlinked to a central bin directory.
 
-One benefit of this approach is that there's no need for projects to explicitly support Dobbin, e.g. with a `package.json` or something.
+One benefit of this approach is that there's no need for projects to explicitly support Dobbin, e.g. with a `package.json` or something, because you define what you want to symlink yourself.
 
 I wrote this primarily so I don't have to manually pull down various scripts into my dotfiles, and can instead store a simple list of those packages.
 
 ## Installation
-Since Dobbin is just a script, you can use it to manage itself.
+Since Dobbin is just a script, you can bootstrap it!
 
-```sh
+```bash
 \curl -sS https://raw.githubusercontent.com/shkm/dobbin/master/dobbin | \
 bash -s add https://github.com/shkm/dobbin dobbin
 ```
@@ -20,7 +20,7 @@ Now just add `$HOME/.dobbin/bin` to your `$PATH`.
 
 ## Usage
 
-### `dobbin[ install]`
+### `dobbin install`
 Installs packages listed in your `$HOME/.dobbin/package_list`.
 
 ### `dobbin add repo_url path [path...]`
@@ -28,15 +28,17 @@ Adds the package to your package list and installs it.
 
 Each path passed is relative to the repository and will be symlinked into `$HOME/.dobbin/bin`.
 
+#### Example
+This will clone the Dobbin repo to `$HOME/.dobbin/packages` and symlink the `dobbin` file to `$HOME/.dobbin/bin`.
+
+`dobbin add https://github.com/shkm/dobbin dobbin`
+
 ### `dobbin remove repo_url`
 __not implemented yet__
 
 Removes the entire package from your package list.
 
 This will remove the git repository and all symlinked files.
-
-#### Example
-`dobbin add https://github.com/shkm/dobbin dobbin`
 
 ### `dobbin update`
 __not implemented yet__
