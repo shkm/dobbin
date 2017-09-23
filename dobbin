@@ -8,39 +8,15 @@ PACKAGES_DIR="$ROOT_DIR/packages"
 BIN_DIR="$ROOT_DIR/bin"
 PACKAGE_LIST="$ROOT_DIR/package_list"
 
-ensure_root_dir_exists() {
-  if [[ ! -d "$ROOT_DIR" ]]; then
-    echo "$ROOT_DIR is missing; creating it."
-    mkdir "$ROOT_DIR"
-  fi
-}
+ensure_files_and_folders_exist() {
+  local dirs=( $ROOT_DIR $PACKAGES_DIR $BIN_DIR )
+  for dir in ${dirs[@]}; do
+    [[ ! -d "$dir" ]] && mkdir "$dir"
+  done
 
-ensure_packages_dir_exists() {
-  if [[ ! -d "$PACKAGES_DIR" ]]; then
-    echo "$PACKAGES_DIR is missing; creating it."
-    mkdir "$PACKAGES_DIR"
-  fi
-}
-
-ensure_bin_dir_exists() {
-  if [[ ! -d "$BIN_DIR" ]]; then
-    echo "$BIN_DIR is missing; creating it."
-    mkdir "$BIN_DIR"
-  fi
-}
-
-ensure_package_list_exists() {
   if [[ ! -f "$PACKAGE_LIST" ]]; then
-    echo "$PACKAGE_LIST is missing; creating it."
     touch "$PACKAGE_LIST"
   fi
-}
-
-ensure_files_and_folders_exist() {
-  ensure_root_dir_exists
-  ensure_packages_dir_exists
-  ensure_bin_dir_exists
-  ensure_package_list_exists
 }
 
 # Runs through each line of the packages file and installs
